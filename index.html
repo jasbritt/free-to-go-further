@@ -1004,13 +1004,7 @@ footer a{color:#fff}
     <p class="eyebrow">Contact us</p>
     <h2>Get in touch</h2>
     <p class="lede">Write to us about the campaign, press enquiries, partnerships or a story from where you live.</p>
-    <div class="contacts">
-      <a class="ct" id="c-email" href="#"><span class="lab">Email</span><strong id="c-email-t"></strong><span>General and press enquiries</span></a>
-      <a class="ct" id="c-insta" href="#" target="_blank" rel="noopener"><span class="lab">Instagram</span><strong id="c-insta-t"></strong><span>Stories and campaign updates</span></a>
-      <a class="ct" id="c-li" href="#" target="_blank" rel="noopener"><span class="lab">LinkedIn</span><strong>Free to Go Further</strong><span>Evidence and policy news</span></a>
-      <a class="ct" href="#member"><span class="lab">Newsletter</span><strong>Bi-monthly email</strong><span>Become a member to receive it</span></a>
-    </div>
-    <form id="msgform" class="formgrid" novalidate style="margin-top:34px">
+    <form id="msgform" class="formgrid" novalidate>
       <div class="f"><label for="cname">Your name</label><input type="text" id="cname" autocomplete="name" required></div>
       <div class="f"><label for="cemail">Email address</label><input type="email" id="cemail" autocomplete="email" required></div>
       <div class="f full"><label for="cmsg">Message</label><textarea id="cmsg" required maxlength="2000"></textarea></div>
@@ -1144,9 +1138,7 @@ var STEPS=[
 /* ---- links, member sign-up and contact form ---- */
 (function(){
   var handle=SETTINGS.instagramUrl.replace(/\/$/,'').split('/').pop();
-  document.getElementById('f-insta').href=SETTINGS.instagramUrl; document.getElementById('c-insta').href=SETTINGS.instagramUrl; document.getElementById('c-insta-t').textContent='@'+handle;
-  document.getElementById('c-li').href=SETTINGS.linkedinUrl;
-  document.getElementById('c-email').href='mailto:'+SETTINGS.contactEmail; document.getElementById('c-email-t').textContent=SETTINGS.contactEmail;
+  document.getElementById('f-insta').href=SETTINGS.instagramUrl; 
   var okmail=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   function send(subject,data,out){
     var text=Object.keys(data).map(function(k){return k+': '+data[k];}).join('\n'); out.hidden=false; out.innerHTML='';
