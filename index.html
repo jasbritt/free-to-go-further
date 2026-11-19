@@ -757,6 +757,7 @@ textarea{min-height:120px;resize:vertical}
 .rot img.on{opacity:1}
 [hidden]{display:none!important}
 #map{position:relative;z-index:0}
+.basemap{filter:grayscale(1) brightness(1.06) contrast(.88)}
 /* roadmap */
 .road{position:relative;margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);height:300px}
 .road svg.rl{position:absolute;left:0;top:0;width:100%;height:300px;pointer-events:none}
@@ -891,7 +892,7 @@ footer a{color:#fff}
         <strong style="font-size:13px;color:var(--ink)">Public spending on transport per person, 2024/25</strong>
         <span><i style="background:#dbe8f8"></i>Under £450</span><span><i style="background:#a9c8ee"></i>£450 to £549</span><span><i style="background:#6ea3e0"></i>£550 to £699</span><span><i style="background:#2a78d6"></i>£700 to £899</span><span><i style="background:#0f3f7a"></i>£900 and over</span>
       </div>
-      <p style="font-size:12px">Route layers are drawn from OpenStreetMap by volunteer mapping projects, so coverage reflects what has been mapped. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Base map © <a href="https://carto.com/attributions">CARTO</a>. Bus routes from the Overpass API. Layers by <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a> and <a href="https://www.cyclosm.org/">CyclOSM</a>.</p>
+      <p style="font-size:12px">Route layers are drawn from OpenStreetMap by volunteer mapping projects, so coverage reflects what has been mapped. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Bus routes from the Overpass API. Layers by <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a> and <a href="https://www.cyclosm.org/">CyclOSM</a>.</p>
     </aside>
     <div id="map" role="application" aria-label="Map of UK transport networks"></div>
   </div>
@@ -1067,7 +1068,7 @@ function startMap(){
   function tileWatch(t){t.on('tileerror',function(){fails++; if(fails>3&&!oks){note.hidden=false; note.textContent='The route layers could not load here. They come from the open web, which this preview blocks. Download the file and open it in Chrome or Safari, or host it, and they will appear. The regional outlines and spending layer work everywhere.';}}); t.on('tileload',function(){oks++;}); return t;}
   map=L.map('map',{minZoom:5,maxZoom:18}).setView([54.6,-3.2],6);
   map.attributionControl.setPrefix(false);
-  tileWatch(L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'})).addTo(map);
+  tileWatch(L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'basemap',attribution:'© OpenStreetMap contributors'})).addTo(map);
   L.geoJSON(REGIONS,{interactive:false,style:{fill:false,color:'#7d93a8',weight:1.2}}).addTo(map).bringToBack();
   function shade(v){return v<450?'#dbe8f8':v<550?'#a9c8ee':v<700?'#6ea3e0':v<900?'#2a78d6':'#0f3f7a';}
   var spend=L.geoJSON(REGIONS,{style:function(f){return {fillColor:shade(f.properties.spend),fillOpacity:.72,color:'#fff',weight:1.2};},
