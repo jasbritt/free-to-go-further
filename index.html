@@ -714,7 +714,7 @@ h2{font-size:clamp(28px,4vw,42px);font-weight:800;font-stretch:88%;line-height:1
 .card h3{font-size:18px}
 .card .n{font-family:var(--display);font-weight:900;font-size:30px;color:var(--orange);line-height:1;margin-bottom:8px}
 /* map */
-#mapwrap{display:grid;grid-template-columns:310px 1fr;height:calc(100vh - 64px);min-height:520px}
+#mapwrap{display:grid;grid-template-columns:310px 1fr;height:calc(100vh - 80px);min-height:520px}
 #panel{background:var(--bg);border-right:1px solid var(--rule);padding:20px;overflow:auto;display:flex;flex-direction:column;gap:16px}
 #panel h2{font-size:22px}
 #panel p{font-size:13.5px;color:var(--soft)}
@@ -728,7 +728,7 @@ label.layer i{width:14px;height:14px;display:block;margin-top:3px}
 label.layer small{display:block;font-weight:400;color:var(--soft);font-size:12.5px;line-height:1.4;margin-top:2px}
 .key{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--soft)}
 .key span{display:flex;align-items:center;gap:8px}.key i{width:14px;height:14px;display:block}
-#map{height:100%;background:#e9eef3}
+#mapbox{height:100%;background:#e9eef3}
 .leaflet-container{font-family:inherit}.tip{font-size:13px;font-weight:600}
 /* ambassadors */
 .ambs{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:30px}
@@ -756,7 +756,8 @@ textarea{min-height:120px;resize:vertical}
 .rot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
 .rot img.on{opacity:1}
 [hidden]{display:none!important}
-#map{position:relative;z-index:0}
+section.tab{scroll-margin-top:80px}
+#mapbox{position:relative;z-index:0}
 .basemap{filter:grayscale(1) brightness(1.06) contrast(.88)}
 /* roadmap */
 .road{position:relative;margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);height:300px}
@@ -894,7 +895,7 @@ footer a{color:#fff}
       </div>
       <p style="font-size:12px">Route layers are drawn from OpenStreetMap by volunteer mapping projects, so coverage reflects what has been mapped. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Layers by <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a> and <a href="https://www.cyclosm.org/">CyclOSM</a>.</p>
     </aside>
-    <div id="map" role="application" aria-label="Map of UK transport networks"></div>
+    <div id="mapbox" role="application" aria-label="Map of UK transport networks"></div>
   </div>
 </section>
 
@@ -1067,7 +1068,7 @@ function startMap(){
   if(map){return;}
   var note=document.getElementById('mapnote'),fails=0,oks=0;
   function tileWatch(t){t.on('tileerror',function(){fails++; if(fails>3&&!oks){note.hidden=false; note.textContent='The route layers could not load here. They come from the open web, which this preview blocks. Download the file and open it in Chrome or Safari, or host it, and they will appear. The regional outlines and spending layer work everywhere.';}}); t.on('tileload',function(){oks++;}); return t;}
-  map=L.map('map',{minZoom:5,maxZoom:18}).setView([54.6,-3.2],6);
+  map=L.map("mapbox",{minZoom:5,maxZoom:18}).setView([54.6,-3.2],6);
   map.attributionControl.setPrefix(false);
   tileWatch(L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'basemap',attribution:'© OpenStreetMap contributors'})).addTo(map);
   L.geoJSON(REGIONS,{interactive:false,style:{fill:false,color:'#7d93a8',weight:1.2}}).addTo(map).bringToBack();
