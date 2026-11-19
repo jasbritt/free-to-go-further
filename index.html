@@ -892,7 +892,7 @@ footer a{color:#fff}
         <strong style="font-size:13px;color:var(--ink)">Public spending on transport per person, 2024/25</strong>
         <span><i style="background:#dbe8f8"></i>Under £450</span><span><i style="background:#a9c8ee"></i>£450 to £549</span><span><i style="background:#6ea3e0"></i>£550 to £699</span><span><i style="background:#2a78d6"></i>£700 to £899</span><span><i style="background:#0f3f7a"></i>£900 and over</span>
       </div>
-      <p style="font-size:12px">Route layers are drawn from OpenStreetMap by volunteer mapping projects, so coverage reflects what has been mapped. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Bus routes from the Overpass API. Layers by <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a> and <a href="https://www.cyclosm.org/">CyclOSM</a>.</p>
+      <p style="font-size:12px">Route layers are drawn from OpenStreetMap by volunteer mapping projects, so coverage reflects what has been mapped. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Layers by <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a> and <a href="https://www.cyclosm.org/">CyclOSM</a>.</p>
     </aside>
     <div id="map" role="application" aria-label="Map of UK transport networks"></div>
   </div>
@@ -1042,6 +1042,7 @@ var SETTINGS={
   memberFormUrl:'',                      // optional Google Form link for the member sign-up, shown in place of the built-in one
   instagramUrl:'https://www.instagram.com/freetogofurther',   // change to the campaign's real Instagram address
   linkedinUrl:'https://www.linkedin.com/company/free-to-go-further',   // change once the LinkedIn page exists
+  transportTileKey:'',                   // free key from thunderforest.com switches on the bus routes layer. Without it that layer is hidden
   formEndpoint:'',                       // paste a form service address here (for example Formspree) to receive applications
   contactEmail:'hello@example.org',      // used when no form service is set: the applicant's email app opens with the answers filled in
   reportUrl:'#'                          // link to the published report
@@ -1073,32 +1074,18 @@ function startMap(){
   function shade(v){return v<450?'#dbe8f8':v<550?'#a9c8ee':v<700?'#6ea3e0':v<900?'#2a78d6':'#0f3f7a';}
   var spend=L.geoJSON(REGIONS,{style:function(f){return {fillColor:shade(f.properties.spend),fillOpacity:.72,color:'#fff',weight:1.2};},
     onEachFeature:function(f,l){l.bindTooltip(f.properties.name+': £'+f.properties.spend.toLocaleString('en-GB')+' per person',{sticky:true,className:'tip'});}});
-  var busGroup=L.layerGroup(), busSeen={}, busTimer=null, busCanvas=L.canvas({padding:.3});
-  function busMsg(t){ note.hidden=!t; note.textContent=t; }
-  function loadBus(){
-    if(!map.hasLayer(busGroup)){ busMsg(''); return; }
-    if(map.getZoom()<12){ busMsg('Zoom in to a town or city to load its bus routes. Railways and cycle routes show at every zoom.'); return; }
-    var b=map.getBounds(), bb=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(v){return v.toFixed(4);}).join(',');
-    busMsg('Loading bus routes for this area.');
-    var q='[out:json][timeout:25];relation["route"~"^(bus|trolleybus|tram)$"]('+bb+');way(r)('+bb+');out geom qt;';
-    fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)})
-      .then(function(r){ if(!r.ok){throw new Error(r.status);} return r.json(); })
-      .then(function(d){ (d.elements||[]).forEach(function(w){ if(busSeen[w.id]||!w.geometry){return;} busSeen[w.id]=1;
-          L.polyline(w.geometry.map(function(p){return [p.lat,p.lon];}),{color:'#d84a35',weight:2.4,opacity:.85,interactive:false,renderer:busCanvas}).addTo(busGroup); }); busMsg(''); })
-      .catch(function(){ busMsg('Bus routes could not be loaded just now. Move the map or try again in a moment.'); });
-  }
-  map.on('moveend',function(){ clearTimeout(busTimer); busTimer=setTimeout(loadBus,700); });
-  busGroup.on('add',function(){ setTimeout(loadBus,50); }); busGroup.on('remove',function(){ busMsg(''); });
+  var busLayer=SETTINGS.transportTileKey?L.tileLayer('https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey='+encodeURIComponent(SETTINGS.transportTileKey),{maxZoom:19,opacity:.95,attribution:'Bus map © Thunderforest'}):null;
   var LAYERS=[
-    {id:'bus',name:'Bus and tram routes',note:'Drawn live from OpenStreetMap. Zoom in to a town or city to load its routes.',colour:'#d84a35',on:true,layer:busGroup},
+    {id:'bus',name:'Bus and tram routes',note:'Every mapped bus and tram line, with route numbers when you zoom in.',colour:'#d84a35',on:true,layer:busLayer},
     {id:'rail',name:'Railways',note:'Main lines, branch lines, metros and stations.',colour:'#0f2740',on:true,layer:L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:19})},
-    {id:'cycle',name:'Signed cycle routes',note:'The National Cycle Network and regional routes.',colour:'#7a3fc4',on:false,layer:L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',{maxZoom:18})},
+    {id:'cycle',name:'Signed cycle routes',note:'The National Cycle Network and regional routes.',colour:'#7a3fc4',on:true,layer:L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',{maxZoom:18})},
     {id:'lanes',name:'Cycle lanes and paths',note:'Street-level cycle tracks and lanes. Best seen zoomed in to a town.',colour:'#1c9c5a',on:false,layer:L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm-lite/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:20})},
     {id:'walk',name:'Walking routes',note:'Long-distance and local signed footpaths.',colour:'#b8860b',on:false,layer:L.tileLayer('https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',{maxZoom:18})},
     {id:'spend',name:'Transport spending by region',note:'Shaded by public spending per person. Hover or tap a region for its figure.',colour:'#2a78d6',on:false,layer:spend}
   ];
   var box=document.getElementById('layers'), key=document.getElementById('spendkey');
   function setLayer(d,on){ if(on){d.layer.addTo(map); if(d.id==='spend'){d.layer.bringToFront();}} else{map.removeLayer(d.layer);} if(d.id==='spend'){key.hidden=!on;} }
+  LAYERS=LAYERS.filter(function(d){return d.layer;});
   LAYERS.forEach(function(d){
     var lab=document.createElement('label'); lab.className='layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=d.on; cb.addEventListener('change',function(){setLayer(d,cb.checked);});
